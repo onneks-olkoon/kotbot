@@ -1,7 +1,9 @@
 # Kotbot - a bot for kotchan
 
 ## INSTALL
-install the [Oil shell](https://www.oilshell.org/)
+- [jq](https://stedolan.github.io/jq/)
+- [curl](https://curl.se/)
+- [oil](https://www.oilshell.org/)
 
 ## RUN
 run any scripts directly, eg:
