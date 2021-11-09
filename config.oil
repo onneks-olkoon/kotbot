@@ -1,0 +1,9 @@
+#!/usr/bin/env oil
+const scheme='https'
+#var scheme='http'
+const domain='kotchan.fun'
+#var domain='localhost'
+const board='int'
+const convo='General'
+const name=''
+const post_read_limit=20

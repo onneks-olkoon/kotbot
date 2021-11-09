@@ -1,0 +1,24 @@
+#!/usr/bin/env oil
+source $_this_dir/kotchan.oil
+
+proc send_waifu() {
+    while true {
+        var name = "example-$(python -c 'import random;print(random.randrange(0,100000))').jpg"
+        >&2 echo "getting waifu $name"
+        var url = "https://thiswaifudoesnotexist.net/$name"
+        curl --silent --remote-name --location $url
+        >&2 echo "waifu waiting request"
+        pipeline | json read :post
+        var num = post->count
+        >&2 echo "waifu found at $num"
+        var body = $'>>' ++ $num ++ $'\n' ++ $url
+        write --qsn -- $body
+        write --qsn -- $name
+    }
+}
+
+forever_posts \
+| new_posts \
+| search_posts '^\.waifu' \
+| send_waifu \
+| post_loop

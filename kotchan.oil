@@ -1,0 +1,66 @@
+#!/usr/bin/env oil
+source $_this_dir/config.oil
+source $_this_dir/pipeline.oil
+var url_base="$scheme://$domain"
+
+proc posts() {
+    >&2 echo "reading $post_read_limit posts"
+    curl -s "$url_base/data/$board?limit=$post_read_limit" \
+    | jq -cr '.[]' \
+    | tac
+}
+
+proc forever_posts(sleep=1) {
+    while true {
+        posts
+        sleep $sleep
+    }
+}
+
+proc search(pattern) {
+    pipeline | json read :post
+    if (post->body ~ pattern) {
+        >&2 echo "matched $[post->body]"
+        json write --pretty=0 :post
+    }
+}
+
+proc search_posts(pattern) {
+    while true {
+        search $pattern
+    }
+}
+
+proc new_posts() {
+    var last = 0
+    while true {
+        pipeline | json read :post
+        var num = post->count
+        if ($num > $last) {
+            setvar last = $num
+            json write --pretty=0 :post
+        }
+    }
+}
+
+proc post(body, image='') {
+    var args = %(
+        -F convo=$convo
+        -F name=$name
+        -F body=$body
+    )
+    if ($image) {
+        setvar args = %(@args -F "image=@$image")
+    }
+    curl $url_base/chat/$board @args | json read :result
+}
+
+proc post_loop(sleep=4) {
+    while true {
+        read --qsn --line :body
+        read --qsn --line :image
+        >&2 echo "posting $image"
+        post $body $image
+        sleep $sleep 
+    }
+}

@@ -1,0 +1,3 @@
+#!/usr/bin/env oil
+source $_this_dir/kotchan.oil
+runproc @ARGV
