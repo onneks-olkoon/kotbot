@@ -8,7 +8,7 @@ proc send_waifu() {
         var url = "https://thiswaifudoesnotexist.net/$name"
         curl --silent --remote-name --location $url
         >&2 echo "waifu waiting request"
-        pipeline | json read :post
+        stdin --line | json read :post
         var num = post->count
         >&2 echo "waifu found at $num"
         var body = $'>>' ++ $num ++ $'\n' ++ $url

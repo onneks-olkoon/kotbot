@@ -1,0 +1,5 @@
+#!/usr/bin/env oil
+proc stdin(@args) {
+    read @args :read
+    write -- $read
+}

@@ -1,6 +1,0 @@
-#!/usr/bin/env oil
-
-proc pipeline() {
-    read --line :line
-    write -- $line
-}

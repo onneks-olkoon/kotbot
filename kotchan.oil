@@ -1,6 +1,6 @@
 #!/usr/bin/env oil
 source $_this_dir/config.oil
-source $_this_dir/pipeline.oil
+source $_this_dir/stdin.oil
 var url_base="$scheme://$domain"
 
 proc posts() {
@@ -18,7 +18,7 @@ proc forever_posts(sleep=1) {
 }
 
 proc search(pattern) {
-    pipeline | json read :post
+    stdin --line | json read :post
     if (post->body ~ pattern) {
         >&2 echo "matched $[post->body]"
         json write --pretty=0 :post
@@ -34,7 +34,7 @@ proc search_posts(pattern) {
 proc new_posts() {
     var last = 0
     while true {
-        pipeline | json read :post
+        stdin --line | json read :post
         var num = post->count
         if ($num > $last) {
             setvar last = $num
