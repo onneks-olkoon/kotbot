@@ -1,0 +1,7 @@
+#!/usr/bin/env oil
+proc log(text) {
+    >&2 echo "$(date) $text"
+}
+proc logshell(file, @args) {
+    .$_this_dir/stderr.oil $args | tee $file
+}

@@ -1,10 +1,11 @@
 #!/usr/bin/env oil
 source $_this_dir/config.oil
 source $_this_dir/stdin.oil
+source $_this_dir/log.oil
 var url_base="$scheme://$domain"
 
 proc posts() {
-    >&2 echo "reading $post_read_limit posts"
+    # log "reading $post_read_limit posts"
     curl -s "$url_base/data/$board?limit=$post_read_limit" \
     | jq -cr '.[]' \
     | tac
@@ -20,12 +21,13 @@ proc forever_posts(sleep=1) {
 proc search(pattern) {
     stdin --line | json read :post
     if (post->body ~ pattern) {
-        >&2 echo "matched $[post->body]"
+        log "matched $[post->body]"
         json write --pretty=0 :post
     }
 }
 
 proc search_posts(pattern) {
+    log "searching $pattern"
     while true {
         search $pattern
     }
@@ -52,14 +54,14 @@ proc post(body, image='') {
     if ($image) {
         setvar args = %(@args -F "image=@$image")
     }
-    curl $url_base/chat/$board @args | json read :result
+    curl --silent $url_base/chat/$board @args | json read :result
 }
 
 proc post_loop(sleep=4) {
     while true {
         read --qsn --line :body
         read --qsn --line :image
-        >&2 echo "posting $image"
+        # log "posting $body"
         post $body $image
         sleep $sleep 
     }
