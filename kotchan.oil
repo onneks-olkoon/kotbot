@@ -6,7 +6,7 @@ var url_base="$scheme://$domain"
 
 proc posts() {
     # log "reading $post_read_limit posts"
-    curl -s "$url_base/data/$board?limit=$post_read_limit" \
+    ... curl --silent "$url_base/data/$board?limit=$post_read_limit"
     | jq -cr '.[]' \
     | tac
 }

@@ -17,8 +17,8 @@ proc send_waifu() {
     }
 }
 
-forever_posts \
-| new_posts \
-| search_posts '^\.waifu' \
-| send_waifu \
+... forever_posts
+| new_posts
+| search_posts '^\.waifu'
+| send_waifu
 | post_loop
