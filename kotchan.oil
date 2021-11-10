@@ -19,10 +19,11 @@ proc forever_posts(sleep=1) {
 }
 
 proc search(pattern) {
-    stdin --line | json read :post
+    read --line :line
+    write -- $line | json read :post
     if (post->body ~ pattern) {
         log "matched $[post->body]"
-        json write --pretty=0 :post
+        write -- $line
     }
 }
 
@@ -36,11 +37,12 @@ proc search_posts(pattern) {
 proc new_posts() {
     var last = 0
     while true {
-        stdin --line | json read :post
+        read --line :line
+        write -- $line | json read :post
         var num = post->count
         if ($num > $last) {
             setvar last = $num
-            json write --pretty=0 :post
+            write -- $line
         }
     }
 }
