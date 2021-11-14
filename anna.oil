@@ -1,0 +1,105 @@
+#!/usr/bin/env oil
+source $_this_dir/kotchan.oil
+source $_this_dir/waifu.oil
+source $_this_dir/anime.oil
+
+proc send_waifu() {
+    while true {
+        get_waifu | read --qsn --line :name
+        var url = "https://thiswaifudoesnotexist.net/$name"
+        log "waiting for waifu"
+        stdin --line | json read :post
+        var num = post->count
+        log ">>$num >waifu"
+        var body = $'>>' ++ $num ++ $'\n' ++ $url
+        write --qsn -- $body
+        write --qsn -- $name
+    }
+}
+
+proc send_anime() {
+    const base_url = "https://thisanimedoesnotexist.ai"
+    const file_prefix = 'psi-'
+    while true {
+        get_anime $file_prefix | read --qsn --line :name
+
+        var out = "${name}.gif"
+        var url = "https://thisanimedoesnotexist.ai/slider.html?seed=$name"
+
+        log "waiting for anime"
+        stdin --line | json read :post
+        var num = post->count
+        log ">>$num >anime"
+        var body = $'>>' ++ $num ++ $'\n' ++ $url
+        # var body = "i'm $url"
+        
+        write --qsn -- $body
+        write --qsn -- $out
+    }
+}
+
+proc forever_anime() {
+    const base_url = "https://thisanimedoesnotexist.ai"
+    const file_prefix = "forever-psi-"
+
+    while true {
+        get_anime $file_prefix | read --qsn --line :name
+        var out = "${name}.gif"
+        var url = "https://thisanimedoesnotexist.ai/slider.html?seed=$name"
+
+        sleep $forever_anime_sleep
+
+        write --qsn -- "i'm $url"
+        write --qsn -- $out
+    
+    }
+}
+
+proc send_anna() {
+    while true {
+        log "waiting for anna"
+        stdin --line | json read :post
+        var prompt = post->body
+        var num = post->count
+        log ">>$num >anna"
+        # write -- $prompt | wc -m  | read --line :chars
+        # ./aitextgen.oil generate -n 1 --to_file False --prompt $prompt | cut -c ${chars}- | read --all :text 
+        ./aitextgen.oil generate -n 1 --to_file False --prompt $prompt | read --all :text 
+        var body = $'>>' ++ $num ++ $'\n' ++ $text
+        write --qsn -- $body
+        write --qsn -- ''
+    }
+}
+
+const post_fifo = 'post_fifo'
+rm $post_fifo || true
+mkfifo $post_fifo
+
+proc run_search (pattern, proc)  {
+    ... search_posts $pattern
+    | runproc $proc
+    >$post_fifo
+}
+
+proc do_atoms() {
+    forever_anime >$post_fifo
+}
+
+proc do_inputs() {
+    ... forever_posts
+    | new_posts
+    | tee
+        >(run_search '^[Aa]nna.+' 'send_anna') \
+        >(run_search '^\.anime' 'send_anime') \
+        >(run_search '^\.waifu' 'send_waifu')
+}
+
+proc do_output() {
+    <$post_fifo post_loop
+}
+
+while true {
+    ... do_inputs
+    | do_atoms
+    | do_output
+}

@@ -1,0 +1,8 @@
+#!/usr/bin/env oil
+proc aitextgen (@args) {
+    find $(nix eval --raw nixpkgs.stdenv.cc.cc.lib) -name 'libstdc++.so.6' | read --line :libstdcxx
+    dirname $libstdcxx | read --line :LD_LIBRARY_PATH
+    >&2 echo "loading LD_LIBRARY_PATH from $LD_LIBRARY_PATH"
+    env LD_LIBRARY_PATH=$LD_LIBRARY_PATH .python/bin/aitextgen @args
+}
+runproc aitextgen @ARGV

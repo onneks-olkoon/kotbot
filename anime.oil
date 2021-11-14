@@ -1,0 +1,27 @@
+#!/usr/bin/env oil
+
+proc get_anime(file_prefix) {
+    const base_url = "https://thisanimedoesnotexist.ai"
+    var name = "$(python -c 'import random;print("{:05d}".format(random.randrange(0,99999)))')"
+    log "getting anime $name"
+
+    var out = "${name}.gif"
+    var filename = "seed${name}.png"
+
+    for (psi in @(./psyrange.py)) {
+        fork {
+            var url = "${base_url}/results/psi-${psi}/${filename}"
+            curl --silent --location -o "${file_prefix}${psi}.png" $url
+        }
+    }
+
+    wait
+
+    log "converting anime $name"
+    # convert ${file_prefix}*.png -coalesce -duplicate 1,-2-1 -quiet -layers OptimizePlus -loop 0 $out
+    convert ${file_prefix}*.png -coalesce -duplicate 1,-2-1 -quiet -loop 0 $out
+
+    log "got anime $name"
+
+    write --qsn -- $name
+}

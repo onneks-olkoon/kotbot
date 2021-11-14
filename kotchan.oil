@@ -7,11 +7,10 @@ var url_base="$scheme://$domain"
 proc posts() {
     # log "reading $post_read_limit posts"
     ... curl --silent "$url_base/data/$board?limit=$post_read_limit"
-    | jq -cr '.[]' \
-    | tac
+    | jq -cr 'sort_by(.count)[]'
 }
 
-proc forever_posts(sleep=1) {
+proc forever_posts(sleep=$posts_sleep) {
     while true {
         posts
         sleep $sleep
@@ -22,7 +21,6 @@ proc search(pattern) {
     read --line :line
     write -- $line | json read :post
     if (post->body ~ pattern) {
-        log "matched $[post->body]"
         write -- $line
     }
 }
@@ -41,6 +39,7 @@ proc new_posts() {
         write -- $line | json read :post
         var num = post->count
         if ($num > $last) {
+            log ">>$num"
             setvar last = $num
             write -- $line
         }
@@ -59,11 +58,11 @@ proc post(body, image='') {
     curl --silent $url_base/chat/$board @args | json read :result
 }
 
-proc post_loop(sleep=4) {
+proc post_loop(sleep=3.5) {
     while true {
         read --qsn --line :body
         read --qsn --line :image
-        # log "posting $body"
+        log "posting"
         post $body $image
         sleep $sleep 
     }
